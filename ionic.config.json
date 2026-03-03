@@ -1,0 +1,7 @@
+{
+  "name": "chat-bot",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

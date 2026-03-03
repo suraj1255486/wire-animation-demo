@@ -1,0 +1,88 @@
+<div class="wire-wrapper">
+  <svg
+    #svgRef
+    [attr.viewBox]="viewBox"
+    preserveAspectRatio="none"
+    xmlns="http://www.w3.org/2000/svg"
+    width="100%"
+    height="100%"
+    class="electric-svg"
+  >
+    <defs>
+      <!-- Core Energy Gradient -->
+      <radialGradient [id]="'electricGrad-' + instanceId" cx="40%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="25%" stop-color="#fff9c4" />
+        <stop offset="60%" [attr.stop-color]="color" />
+        <stop offset="100%" [attr.stop-color]="color" stop-opacity="0" />
+      </radialGradient>
+
+      <!-- Spark Gradient -->
+      <radialGradient [id]="'sparkGrad-' + instanceId">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="100%" [attr.stop-color]="color" stop-opacity="0" />
+      </radialGradient>
+
+      <!-- Layered Premium Glow Filters -->
+      <filter [id]="'wireGlow-' + instanceId" x="-100%" y="-100%" width="300%" height="300%">
+        <!-- Outer soft aura -->
+        <feGaussianBlur stdDeviation="1.5" result="blur1" />
+        <!-- Sharp core glow -->
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.4" result="blur2" />
+        <feMerge>
+          <feMergeNode in="blur1" />
+          <feMergeNode in="blur2" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      <filter [id]="'particleGlow-' + instanceId" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="2.2" result="blur1" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur2" />
+        <feColorMatrix in="blur1" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.8 0" result="brightBlur"/>
+        <feMerge>
+          <feMergeNode in="brightBlur" />
+          <feMergeNode in="blur2" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      <filter [id]="'sparkFilter-' + instanceId" x="-150%" y="-150%" width="400%" height="400%">
+        <feGaussianBlur stdDeviation="0.8" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Base path (static wire background) -->
+    <path
+      [attr.d]="pathData"
+      fill="none"
+      [attr.stroke]="color"
+      stroke-width="1.2"
+      stroke-opacity="0.15"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Dynamic glow trail layer -->
+    <path
+      #pathRef
+      [attr.d]="pathData"
+      fill="none"
+      [attr.stroke]="color"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      [attr.filter]="'url(#wireGlow-' + instanceId + ')'"
+    />
+
+    <!-- Particle and Effect layer -->
+    <g #particlesGroup overflow="visible">
+      <!-- Sparks will be appended here dynamically -->
+    </g>
+  </svg>
+</div>
+

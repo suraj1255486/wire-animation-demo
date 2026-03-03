@@ -1,0 +1,63 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Solar Energy Flow</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-buttons>
+    <ion-button (click)="startFlow()">Start</ion-button>
+    <ion-button (click)="stopFlow()">Stop</ion-button>
+    <ion-button (click)="reverseFlow()">Reverse</ion-button>
+  </ion-buttons>
+  <div class="solar-scene-wrapper">
+    <div class="house-container">
+      <img
+        src="assets/home.png"
+        alt="Solar Home"
+        class="house-img"
+      />
+
+      <!-- Animated Wire Component 1 -->
+      <div class="wire-component-wrapper wire-yellow">
+        <app-animated-wire
+          #wire1
+          [pathData]="path1"
+          [color]="'#FFE000'"
+          [duration]="3500"
+          [trailLength]="20"
+          [autoStart]="true"
+        ></app-animated-wire>
+      </div>
+
+      <!-- Animated Wire Component 2 -->
+      <div class="wire-component-wrapper wire-blue">
+        <app-animated-wire
+          #wire2
+          [pathData]="path2"
+          [viewBox]="'0 0 78 43'"
+          [color]="'#5184BF'"
+          [duration]="3000"
+          [trailLength]="25"
+          [autoStart]="true"
+        ></app-animated-wire>
+      </div>
+
+      <!-- Animated Wire Component 3 -->
+      <div class="wire-component-wrapper wire-red">
+        <app-animated-wire
+          #wire3
+          [pathData]="path3"
+          [viewBox]="'0 0 30 9'"
+          [color]="'#E23249'"
+          [duration]="1000"
+          [trailLength]="10"
+          [autoStart]="true"
+          [reverse]="true"
+      
+        ></app-animated-wire>
+      </div>
+
+    </div>
+  </div>
+</ion-content>
