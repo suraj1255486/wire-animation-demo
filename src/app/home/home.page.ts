@@ -20,21 +20,21 @@ export class HomePage {
   @ViewChild('wire3') wire3!: AnimatedWireComponent;
 
   startFlow() {
-    this.wire1.start();
-    this.wire2.start();
-    this.wire3.start();
+    // this.wire1.start();
+    // this.wire2.start();
+    // this.wire3.start();
   }
 
   stopFlow() {
-    this.wire1.stop();
-    this.wire2.stop();
-    this.wire3.stop();
+    // this.wire1.stop();
+    // this.wire2.stop();
+    // this.wire3.stop();
   }
 
   reverseFlow() {
     this.isReversed = !this.isReversed;
-    this.wire1.toggleReverse(this.isReversed);
-    this.wire2.toggleReverse(this.isReversed);
-    this.wire3.toggleReverse(this.isReversed);
+    // this.wire1.toggleReverse(this.isReversed);
+    // this.wire2.toggleReverse(this.isReversed);
+    // this.wire3.toggleReverse(this.isReversed);
   }
 }

@@ -1,157 +1,132 @@
-import { Component, AfterViewInit, OnDestroy, NgZone, Input, ViewChild, ElementRef, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { animate, remove } from 'animejs';
+import { CommonModule } from "@angular/common";
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  NgZone,
+  OnDestroy,
+  signal,
+  viewChild,
+} from "@angular/core";
+import { animate, remove } from "animejs";
 
 @Component({
-  selector: 'app-animated-wire',
-  templateUrl: './animated-wire.component.html',
-  styleUrls: ['./animated-wire.component.scss'],
+  selector: "app-animated-wire",
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule],
+  templateUrl: "./animated-wire.component.html",
+  styleUrls: ["./animated-wire.component.scss"],
 })
-export class AnimatedWireComponent implements AfterViewInit, OnDestroy, OnChanges {
-  @Input() pathData: string = 'M10.37,2.29 L2.87,12.79 L30.37,17.54 L30.37,21.29 L63.22,20.06 L63.22,41.52';
-  @Input() viewBox: string = '0 0 66 44';
-  @Input() color: string = '#FFE000';
-  @Input() duration: number = 3500;
-  @Input() trailLength: number = 20;
-  @Input() autoStart: boolean = true;
-  @Input() reverse: boolean = false;
-  @Input() showParticles: boolean = true;
+export class AnimatedWireComponent implements AfterViewInit, OnDestroy {
+  private ngZone = inject(NgZone);
 
-  @ViewChild('pathRef') pathRef!: ElementRef<SVGPathElement>;
-  @ViewChild('particlePathRef') particlePathRef!: ElementRef<SVGPathElement>;
-  @ViewChild('svgRef') svgRef!: ElementRef<SVGSVGElement>;
+  // SIGNAL INPUTS
+  pathData = input(
+    "M10.37,2.29 L2.87,12.79 L30.37,17.54 L30.37,21.29 L63.22,20.06 L63.22,41.52",
+  );
+  viewBox = input("0 0 66 44");
+  color = input("#FFE000");
+  duration = input(3500);
+  trailLength = input(20);
+  autoStart = input(true);
+  reverse = input(false);
+  showParticles = input(true);
 
-  public instanceId = Math.random().toString(36).substring(2, 9);
-  private currentAnimation: any = null;
+  // ViewChild signal queries
+  pathRef = viewChild<ElementRef<SVGPathElement>>("pathRef");
+  particlePathRef = viewChild<ElementRef<SVGPathElement>>("particlePathRef");
+  trailGlowRef = viewChild<ElementRef<SVGPathElement>>("trailGlowRef");
+
+  instanceId = Math.random().toString(36).substring(2, 9);
+
+  private totalLength = 0;
+  private animation: any = null;
   private destroyed = false;
-  private isPaused = false;
-  private isInitialized = false;
-  private flowTimeout: any = null;
 
-  public startPoint = { x: 0, y: 0 };
-  public endPoint = { x: 0, y: 0 };
+  startPoint = signal({ x: 0, y: 0 });
+  endPoint = signal({ x: 0, y: 0 });
 
-  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+  constructor() {
+    // Reactive animation restart using signals
+    effect(() => {
+      this.pathData();
+      this.reverse();
+      this.duration();
+      this.trailLength();
+      this.showParticles();
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // Only restart on subsequent changes, not the initial one
-    if (this.isInitialized) {
-      const needsRestart = changes['pathData'] || changes['showParticles'] || changes['reverse'] || changes['duration'] || changes['trailLength'];
-      if (needsRestart) {
-        this.restart();
-      }
-    }
+      this.restartAnimation();
+    });
   }
 
   ngAfterViewInit() {
-    this.isInitialized = true;
-    if (this.autoStart) {
-      this.ngZone.runOutsideAngular(() => {
-        // Reduced delay to start faster after view init
-        this.flowTimeout = setTimeout(() => this.startFlow(), 100);
+    this.initializePath();
+
+    if (this.autoStart()) {
+      this.startAnimation();
+    }
+  }
+
+  private initializePath() {
+    const pathEl = this.pathRef()?.nativeElement;
+    if (!pathEl) return;
+
+    this.totalLength = pathEl.getTotalLength();
+
+    const start = pathEl.getPointAtLength(0);
+    const end = pathEl.getPointAtLength(this.totalLength);
+
+    this.startPoint.set({ x: start.x, y: start.y });
+    this.endPoint.set({ x: end.x, y: end.y });
+  }
+
+  private startAnimation() {
+    if (!this.showParticles() || !this.totalLength) return;
+
+    const particle = this.particlePathRef()?.nativeElement;
+    const glow = this.trailGlowRef()?.nativeElement;
+
+    if (!particle) return;
+
+    const paths = glow ? [glow, particle] : [particle];
+
+    paths.forEach((p) => {
+      p.style.strokeDasharray = `${this.trailLength()} ${this.totalLength}`;
+    });
+
+    const startOffset = this.reverse() ? -this.totalLength : this.trailLength();
+
+    const endOffset = this.reverse() ? this.trailLength() : -this.totalLength;
+
+    this.ngZone.runOutsideAngular(() => {
+      this.animation = animate(paths, {
+        strokeDashoffset: [startOffset, endOffset],
+        duration: this.duration(),
+        easing: "linear",
+        loop: true,
       });
-    }
+    });
   }
 
-  public start() {
-    this.isPaused = false;
-    if (this.currentAnimation) {
-      this.currentAnimation.play();
-    } else {
-      this.startFlow();
-    }
+  private restartAnimation() {
+    if (this.destroyed) return;
+
+    this.stopAnimation();
+    queueMicrotask(() => this.startAnimation());
   }
 
-  public stop() {
-    this.isPaused = true;
-    if (this.currentAnimation) this.currentAnimation.pause();
-    if (this.flowTimeout) clearTimeout(this.flowTimeout);
-  }
-
-  public toggleReverse(isReverse: boolean) {
-    this.reverse = isReverse;
-    this.restart();
-  }
-
-  public restart() {
-    // If we're restarting, we shouldn't necessarily be "paused" 
-    // unless the user explicitly stopped the animation.
-    const wasPaused = this.isPaused;
-    this.cleanup();
-    this.isPaused = wasPaused;
-    this.startFlow();
-  }
-
-  private cleanup() {
-    if (this.particlePathRef?.nativeElement) {
-      remove(this.particlePathRef.nativeElement);
-    }
-    this.currentAnimation = null;
-    if (this.flowTimeout) clearTimeout(this.flowTimeout);
-  }
-
-  private startFlow() {
-    if (this.destroyed || this.isPaused) return;
-
-    const pathEl = this.pathRef?.nativeElement;
-    const particlePathEl = this.particlePathRef?.nativeElement;
-    
-    if (pathEl) {
-      // 1. Core wire setup: ensure fully visible for the permanent arrow
-      pathEl.style.strokeDasharray = 'none';
-      pathEl.style.strokeDashoffset = '0';
-      pathEl.style.opacity = '0.9';
-
-      const totalLen = pathEl.getTotalLength();
-      if (totalLen === 0) {
-        // If the path hasn't rendered yet, try again in a moment
-        this.flowTimeout = setTimeout(() => this.startFlow(), 100);
-        return;
-      }
-      
-      // Update points for mask logic (merging effect)
-      const p1 = pathEl.getPointAtLength(0);
-      const p2 = pathEl.getPointAtLength(totalLen);
-      this.startPoint = { x: p1.x, y: p1.y };
-      this.endPoint = { x: p2.x, y: p2.y };
-      this.cdr.detectChanges();
-
-      // 3. Flowing Neon Trail Logic (Layered)
-      if (this.showParticles && particlePathEl) {
-        this.cleanup();
-        this.isPaused = false;
-
-        // Target both trail layers (core and glow)
-        const glowPathEl = this.svgRef.nativeElement.querySelector('.trail-glow') as SVGPathElement;
-        const trailPaths = glowPathEl ? [glowPathEl, particlePathEl] : [particlePathEl];
-
-        trailPaths.forEach(p => {
-          p.style.strokeDasharray = `${this.trailLength} ${totalLen}`;
-        });
-        
-        const startOffset = this.reverse ? -totalLen : this.trailLength;
-        const endOffset = this.reverse ? this.trailLength : -totalLen;
-
-        this.currentAnimation = animate(trailPaths, {
-          strokeDashoffset: [startOffset, endOffset],
-          duration: this.duration,
-          easing: 'linear',
-          onComplete: () => {
-            if (!this.destroyed && !this.isPaused) {
-              this.flowTimeout = setTimeout(() => this.startFlow(), 100);
-            }
-          }
-        });
-      }
+  stopAnimation() {
+    if (this.animation) {
+      remove(this.animation);
+      this.animation = null;
     }
   }
 
   ngOnDestroy() {
     this.destroyed = true;
-    this.cleanup();
+    this.stopAnimation();
   }
 }
-
-
