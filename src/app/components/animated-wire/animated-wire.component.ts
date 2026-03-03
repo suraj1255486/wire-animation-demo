@@ -21,6 +21,7 @@ export class AnimatedWireComponent implements AfterViewInit, OnDestroy, OnChange
 
   @ViewChild('pathRef') pathRef!: ElementRef<SVGPathElement>;
   @ViewChild('particlePathRef') particlePathRef!: ElementRef<SVGPathElement>;
+  @ViewChild('svgRef') svgRef!: ElementRef<SVGSVGElement>;
 
   public instanceId = Math.random().toString(36).substring(2, 9);
   private currentAnimation: any = null;
@@ -117,17 +118,23 @@ export class AnimatedWireComponent implements AfterViewInit, OnDestroy, OnChange
       this.endPoint = { x: p2.x, y: p2.y };
       this.cdr.detectChanges();
 
-      // 2. Flowing Particle Trail (Masked "Merge" Effect)
+      // 3. Flowing Neon Trail Logic (Layered)
       if (this.showParticles && particlePathEl) {
         this.cleanup();
-        this.isPaused = false; // Ensure it's not paused when starting a fresh flow
+        this.isPaused = false;
 
-        particlePathEl.style.strokeDasharray = `${this.trailLength} ${totalLen}`;
+        // Target both trail layers (core and glow)
+        const glowPathEl = this.svgRef.nativeElement.querySelector('.trail-glow') as SVGPathElement;
+        const trailPaths = glowPathEl ? [glowPathEl, particlePathEl] : [particlePathEl];
+
+        trailPaths.forEach(p => {
+          p.style.strokeDasharray = `${this.trailLength} ${totalLen}`;
+        });
         
         const startOffset = this.reverse ? -totalLen : this.trailLength;
         const endOffset = this.reverse ? this.trailLength : -totalLen;
 
-        this.currentAnimation = animate(particlePathEl, {
+        this.currentAnimation = animate(trailPaths, {
           strokeDashoffset: [startOffset, endOffset],
           duration: this.duration,
           easing: 'linear',
