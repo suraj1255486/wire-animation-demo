@@ -15,6 +15,7 @@
   mix-blend-mode: color-dodge;
   pointer-events: none;
   filter: saturate(1.8) brightness(1.5);
+  will-change: stroke-dashoffset, opacity, stroke-width;
 
   &.wisp-1 {
     animation: electricFlicker 0.1s infinite;
@@ -47,8 +48,10 @@
 .trail-glow {
   mix-blend-mode: screen;
   filter: blur(2px) brightness(1.2);
+  will-change: stroke-dashoffset, opacity;
 }
 
 .trail-core {
   mix-blend-mode: normal;
+  will-change: stroke-dashoffset;
 }

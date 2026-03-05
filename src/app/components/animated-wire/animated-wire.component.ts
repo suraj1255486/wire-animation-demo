@@ -28,13 +28,13 @@ export class AnimatedWireComponent implements AfterViewInit, OnDestroy {
   pathData = input(
     "M10.37,2.29 L2.87,12.79 L30.37,17.54 L30.37,21.29 L63.22,20.06 L63.22,41.52",
   );
-  viewBox = input("0 0 66 44");
-  color = input("#FFE000");
+  reverse = input(false);
   duration = input(3500);
   trailLength = input(20);
   autoStart = input(true);
-  reverse = input(false);
+  color = input("#FFE000");
   showParticles = input(true);
+  viewBox = input("0 0 66 44");
 
   // ViewChild signal queries
   pathRef = viewChild<ElementRef<SVGPathElement>>("pathRef");
@@ -139,6 +139,7 @@ export class AnimatedWireComponent implements AfterViewInit, OnDestroy {
 
     this.stopAnimation();
     queueMicrotask(() => {
+      if (this.destroyed) return;
       // Re-calculate path metrics in case pathData changed
       this.initializePath();
       this.startAnimation();
