@@ -8,16 +8,17 @@
     height="100%"
     class="electric-svg"
   >
-
     <!-- ===================== -->
     <!-- DEFINITIONS SECTION   -->
     <!-- ===================== -->
     <defs>
-
       <!-- 1️⃣ Neon Glow Filter (Optimized) -->
       <filter
         [id]="'neonGlow-' + instanceId"
-        x="-100%" y="-100%" width="300%" height="300%"
+        x="-100%"
+        y="-100%"
+        width="300%"
+        height="300%"
       >
         <feGaussianBlur stdDeviation="1.2" result="blur1" />
         <feDropShadow
@@ -33,7 +34,10 @@
       <!-- 2️⃣ Core Glow Filter -->
       <filter
         [id]="'coreGlow-' + instanceId"
-        x="-100%" y="-100%" width="300%" height="300%"
+        x="-100%"
+        y="-100%"
+        width="300%"
+        height="300%"
       >
         <feGaussianBlur stdDeviation="0.3" />
         <feComposite in="SourceGraphic" operator="over" />
@@ -42,20 +46,36 @@
       <!-- 3️⃣ Arrow Shadow (Optimized) -->
       <filter
         [id]="'arrowShadow-' + instanceId"
-        x="-100%" y="-100%" width="300%" height="300%"
+        x="-100%"
+        y="-100%"
+        width="300%"
+        height="300%"
       >
-        <feDropShadow dx="0" dy="1.2" stdDeviation="0.8"
-          flood-color="black" flood-opacity="0.25" />
-        <feDropShadow dx="0" dy="2.5" stdDeviation="1.5"
-          flood-color="black" flood-opacity="0.2" />
+        <feDropShadow
+          dx="0"
+          dy="1.2"
+          stdDeviation="0.8"
+          flood-color="black"
+          flood-opacity="0.25"
+        />
+        <feDropShadow
+          dx="0"
+          dy="2.5"
+          stdDeviation="1.5"
+          flood-color="black"
+          flood-opacity="0.2"
+        />
       </filter>
 
       <!-- 4️⃣ Path Shadow (Single Version - Removed Duplicate) -->
       <filter
         [id]="'housePathShadow-' + instanceId"
-        x="-100%" y="-100%" width="300%" height="300%"
+        x="-100%"
+        y="-100%"
+        width="300%"
+        height="300%"
       >
-        <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="blur"/>
+        <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="blur" />
         <feColorMatrix
           type="matrix"
           values="0 0 0 0 0.15
@@ -64,10 +84,10 @@
                   0 0 0 0.35 0"
           result="shadowMat"
         />
-        <feOffset dx="0" dy="0.5"/>
+        <feOffset dx="0" dy="0.5" />
         <feMerge>
-          <feMergeNode in="shadowMat"/>
-          <feMergeNode in="SourceGraphic"/>
+          <feMergeNode in="shadowMat" />
+          <feMergeNode in="SourceGraphic" />
         </feMerge>
       </filter>
 
@@ -81,25 +101,58 @@
       <!-- 6️⃣ Particle Mask -->
       <mask [id]="'particleMask-' + instanceId">
         <rect x="-100%" y="-100%" width="300%" height="300%" fill="white" />
-
-        @if (!reverse()) {
-          <circle
-            [attr.cx]="endPoint().x"
-            [attr.cy]="endPoint().y"
-            r="8"
-            [attr.fill]="'url(#mergeGrad-' + instanceId + ')'"
-          />
-        } @else {
-          <circle
-            [attr.cx]="startPoint().x"
-            [attr.cy]="startPoint().y"
-            r="8"
-            [attr.fill]="'url(#mergeGrad-' + instanceId + ')'"
-          />
-        }
+        <circle
+          [attr.cx]="maskCenter().x"
+          [attr.cy]="maskCenter().y"
+          r="8"
+          [attr.fill]="'url(#mergeGrad-' + instanceId + ')'"
+        />
       </mask>
 
-      <!-- 7️⃣ Arrowhead -->
+      <!-- 7️⃣ Thunder/Lightning Filter (Refined & Sharp) -->
+      <filter
+        [id]="'lightningFilter-' + instanceId"
+        x="-200%"
+        y="-200%"
+        width="500%"
+        height="500%"
+      >
+        <!-- High Frequency Turbulence -->
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.4"
+          numOctaves="3"
+          result="noise"
+        >
+          <animate
+            attributeName="seed"
+            from="1"
+            to="1000"
+            dur="1s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+
+        <!-- Subtle Displacement (Stay close to wire) -->
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="noise"
+          scale="4"
+          result="displaced"
+        />
+
+        <!-- Sharp Glow -->
+        <feGaussianBlur in="displaced" stdDeviation="0.4" result="glow1" />
+        <feGaussianBlur in="displaced" stdDeviation="1.5" result="glow2" />
+
+        <feMerge>
+          <feMergeNode in="glow2" />
+          <feMergeNode in="glow1" />
+          <feMergeNode in="displaced" />
+        </feMerge>
+      </filter>
+
+      <!-- 9️⃣ Arrowhead -->
       <marker
         [id]="'arrowhead-' + instanceId"
         viewBox="0 0 10 10"
@@ -115,7 +168,6 @@
           [attr.filter]="'url(#arrowShadow-' + instanceId + ')'"
         />
       </marker>
-
     </defs>
 
     <!-- ===================== -->
@@ -145,8 +197,12 @@
       stroke-linecap="round"
       stroke-linejoin="round"
       [attr.filter]="'url(#housePathShadow-' + instanceId + ')'"
-      [attr.marker-end]="!reverse() ? 'url(#arrowhead-' + instanceId + ')' : null"
-      [attr.marker-start]="reverse() ? 'url(#arrowhead-' + instanceId + ')' : null"
+      [attr.marker-end]="
+        !reverse() ? 'url(#arrowhead-' + instanceId + ')' : null
+      "
+      [attr.marker-start]="
+        reverse() ? 'url(#arrowhead-' + instanceId + ')' : null
+      "
     />
 
     <!-- ===================== -->
@@ -154,36 +210,56 @@
     <!-- ===================== -->
 
     @if (showParticles()) {
+      <!-- Thunder/Lightning Layers -->
+      <!-- Pinned to the wire with high-frequency jitter -->
+      <g [attr.mask]="'url(#particleMask-' + instanceId + ')'">
+        <!-- Base Aura -->
+        <path
+          #trailGlowRef
+          class="trail-glow"
+          [attr.d]="pathData()"
+          fill="none"
+          [attr.stroke]="color()"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          [attr.filter]="'url(#neonGlow-' + instanceId + ')'"
+        />
 
-      <!-- Outer Glow -->
-      <path
-        #trailGlowRef
-        class="trail-glow"
-        [attr.d]="pathData()"
-        fill="none"
-        [attr.stroke]="color()"
-        stroke-width="3.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        [attr.filter]="'url(#neonGlow-' + instanceId + ')'"
-        [attr.mask]="'url(#particleMask-' + instanceId + ')'"
-      />
+        <!-- Electric Strands -->
+        <path
+          #lightningPath1
+          class="lightning-wisp wisp-1"
+          [attr.d]="pathData()"
+          fill="none"
+          stroke="white"
+          stroke-width="1.5"
+          [attr.filter]="'url(#lightningFilter-' + instanceId + ')'"
+        />
 
-      <!-- Inner Core -->
-      <path
-        #particlePathRef
-        class="trail-core"
-        [attr.d]="pathData()"
-        fill="none"
-        stroke="white"
-        stroke-width="1.2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        [attr.filter]="'url(#coreGlow-' + instanceId + ')'"
-        [attr.mask]="'url(#particleMask-' + instanceId + ')'"
-      />
+        <path
+          #lightningPath2
+          class="lightning-wisp wisp-2"
+          [attr.d]="pathData()"
+          fill="none"
+          [attr.stroke]="color()"
+          stroke-width="1"
+          [attr.filter]="'url(#lightningFilter-' + instanceId + ')'"
+        />
 
+        <!-- Bright Core -->
+        <path
+          #particlePathRef
+          class="trail-core"
+          [attr.d]="pathData()"
+          fill="none"
+          stroke="white"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          [attr.filter]="'url(#coreGlow-' + instanceId + ')'"
+        />
+      </g>
     }
-
   </svg>
 </div>

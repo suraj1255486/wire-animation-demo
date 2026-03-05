@@ -1,10 +1,54 @@
-.wire-wrapper {
+.wire-wrapper,
+.electric-svg {
   width: 100%;
   height: 100%;
-  position: relative;
   overflow: visible;
+}
 
-  svg {
-    overflow: visible;
+.wire-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightning-wisp {
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+  filter: saturate(1.8) brightness(1.5);
+
+  &.wisp-1 {
+    animation: electricFlicker 0.1s infinite;
   }
+  &.wisp-2 {
+    animation: electricFlicker 0.15s infinite reverse;
+  }
+}
+
+@keyframes electricFlicker {
+  0%,
+  100% {
+    opacity: 0.3;
+    stroke-width: 0.5px;
+  }
+  25% {
+    opacity: 1;
+    stroke-width: 1.5px;
+  }
+  50% {
+    opacity: 0.6;
+    stroke-width: 0.8px;
+  }
+  75% {
+    opacity: 0.9;
+    stroke-width: 1.2px;
+  }
+}
+
+.trail-glow {
+  mix-blend-mode: screen;
+  filter: blur(2px) brightness(1.2);
+}
+
+.trail-core {
+  mix-blend-mode: normal;
 }

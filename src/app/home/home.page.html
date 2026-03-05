@@ -27,6 +27,7 @@
           [duration]="3500"
           [trailLength]="20"
           [autoStart]="true"
+          [reverse]="isReversed"
         ></app-animated-wire>
       </div>
 
@@ -40,6 +41,7 @@
           [duration]="3000"
           [trailLength]="25"
           [autoStart]="true"
+          [reverse]="isReversed"
         ></app-animated-wire>
       </div>
 
@@ -50,10 +52,10 @@
           [pathData]="path3"
           [viewBox]="'0 0 30 9'"
           [color]="'#E23249'"
-          [duration]="1000"
+          [duration]="3500"
           [trailLength]="10"
           [autoStart]="true"
-          [reverse]="true"
+          [reverse]="!isReversed"
       
         ></app-animated-wire>
       </div>

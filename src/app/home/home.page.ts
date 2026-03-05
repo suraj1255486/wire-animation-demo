@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, viewChildren } from '@angular/core';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons } from '@ionic/angular/standalone';
 import { AnimatedWireComponent } from '../components/animated-wire/animated-wire.component';
 
@@ -14,27 +14,18 @@ export class HomePage {
   public path2 = 'M75.0704 38.1987 L51.6938 39.7571 L51.6937 11.0937 L2.50006 2.59386 L2.50006 15.0939';
   public path3 = 'M2.0625 5.72119 L27.6221 2.49609';
   public isReversed = false;
-
-  @ViewChild('wire1') wire1!: AnimatedWireComponent;
-  @ViewChild('wire2') wire2!: AnimatedWireComponent;
-  @ViewChild('wire3') wire3!: AnimatedWireComponent;
+  
+  wires = viewChildren(AnimatedWireComponent);
 
   startFlow() {
-    // this.wire1.start();
-    // this.wire2.start();
-    // this.wire3.start();
+    this.wires().forEach(wire => wire?.startAnimation());
   }
 
   stopFlow() {
-    // this.wire1.stop();
-    // this.wire2.stop();
-    // this.wire3.stop();
+    this.wires().forEach(wire => wire?.stopAnimation());
   }
 
   reverseFlow() {
     this.isReversed = !this.isReversed;
-    // this.wire1.toggleReverse(this.isReversed);
-    // this.wire2.toggleReverse(this.isReversed);
-    // this.wire3.toggleReverse(this.isReversed);
   }
 }
